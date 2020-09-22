@@ -1,43 +1,31 @@
 function scheduleHtmlParser(html) {
-    //除函数名外都可编辑
-    //传入的参数为上一步函数获取到的html
-    //可使用正则匹配
-    //可使用解析dom匹配，工具内置了$，跟jquery使用方法一样，直接用就可以了，参考：https://juejin.im/post/5ea131f76fb9a03c8122d6b9
-    //以下为示例，您可以完全重写或在此基础上更改
     let result = []
     var flag=0
     var op=html.slice(html.search('course-box'),html.search('/tbody'))
     var ans=op.slice(op.search('<tr>')+4,op.length)
-    //console.info(ans)
-    var cls=[]
+    var cls=[]//切片课表部分
     for(let i=1;i<12;i+=2)
     {
         var course=[]
-        //console.info(i)
         course=ans.slice(12,ans.search('/tr>'))
         ans=ans.slice(ans.search('/tr>')+4)
-        //console.info(course)
         cls.push(course)
     }
-    //for(let i=0;i<6;i++)
-        //console.info(cls[i])
     for(let i=0;i<6;i++)//按节次
     {
         cls[i]=cls[i].slice(cls[i].search('</td>')+5)
-        //console.info(i,cls[i])
         let temp=cls[i]
-        for(let j=0;j<7;j++)//模拟，按星期
+        for(let j=0;j<7;j++)//模拟，按星期读取
         {   
-            //console.info(temp)
             let pt=temp.search('<td>')+5
             if(flag==1)
             {
                 pt=0
                 flag=0
             }
-            if(temp[pt]=='<')
+            if(temp[pt]=='<')//无课程
             {
-                //console.info('第',j+1,'星期','第',i+1,'节无课程')
+                //'第',j+1,'星期','第',i+1,'节无课程')
                 temp=temp.slice(temp.search('</td>')+5)
             }
             else
@@ -53,7 +41,7 @@ function scheduleHtmlParser(html) {
                 temp=temp.slice(temp.search('<br>')+4)
                 course.teacher=temp.slice(0,temp.search(' '))
                 pt=temp.search(' ')+1
-                if(temp[pt]=='@')//有教室
+                if(temp[pt]=='@')//课程有教室
                 {
                     //console.info('有教室')
                     course.position=temp.slice(pt+1,temp.search('<br>'));
@@ -70,9 +58,8 @@ function scheduleHtmlParser(html) {
                 }
                 let st=0
                 let ed=0
-                console.info(temp)
                 let t_st=temp.slice(0,temp.search(' '))
-                if(t_st[t_st.length-1]==')')//有单双周
+                if(t_st[t_st.length-1]==')')//课程有单双周
                 {
                       
                     st=t_st.slice(0,t_st.search('-'))-0
@@ -95,13 +82,11 @@ function scheduleHtmlParser(html) {
                             for(let k=st+1;k<=ed;k+=2)
                                 course.weeks.push(k-0)
                     }
-                      //判断之后还有没有课程
-                    //console.info('判断单双周完毕，下面进行判断是否还有课')
+                    //判断之后还有没有课程
                     temp=temp.slice(temp.search('<br>')+4)
-                    if(temp[0]=='<')//结尾了
+                    if(temp[0]=='<')//没有课程了
                     {
-                        course.day=(j+1)//.toString
-                        //console.info(i)
+                        course.day=(j+1)
                         var time={}
                         time.section=i*2+1
                         time.startTime=''
@@ -113,10 +98,10 @@ function scheduleHtmlParser(html) {
                         time2.endTime=''
                         course.sections[1]=time2
                         result.push(course)
-                        //console.info('第',j+1,'星期','第',i+1,'节有课程：',course)
                         temp=temp.slice(temp.search('</td>')+5)
+                        //('第',j+1,'星期','第',i+1,'节有课程：',course)
                     }
-                    else//还有
+                    else//还有课程
                     {
                         var time={}
                         course.day=(j+1)//.toString
@@ -130,7 +115,7 @@ function scheduleHtmlParser(html) {
                         time2.endTime=''
                         course.sections[1]=time2
                         result.push(course)
-                        //console.info('第',j+1,'星期','第',i+1,'节有课程：',course)
+                        //('第',j+1,'星期','第',i+1,'节有课程：',course)
                         j--  
                         flag=1                              
                     }
@@ -142,7 +127,7 @@ function scheduleHtmlParser(html) {
                     ed=t_st.slice(t_st.search('-')+1)
                     for(let k=st;k<=ed;k++)
                         course.weeks.push(k-0)
-                    course.day=(j+1)//.toString
+                    course.day=(j+1)
                     time.section=i*2+1
                     time.startTime=''
                     time.endTime=''
@@ -153,13 +138,12 @@ function scheduleHtmlParser(html) {
                     time2.endTime=''
                     course.sections[1]=time2
                     result.push(course)
-                    //console.info('第',j+1,'星期','第',i+1,'节有课程：',course)
+                    //('第',j+1,'星期','第',i+1,'节有课程：',course)
                     temp=temp.slice(temp.search('</td>')+5)
                 }
                 
             }    
         }
     }
-   // console.info( 'courseInfos:',result)
     return { courseInfos: result }
 }
